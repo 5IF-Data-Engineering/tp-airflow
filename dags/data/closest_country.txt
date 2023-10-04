@@ -1,1 +1,1 @@
-AU,-25.274398,133.775136,Australia,Oceania
+BB,13.193887,-59.543198,Barbados,North_America

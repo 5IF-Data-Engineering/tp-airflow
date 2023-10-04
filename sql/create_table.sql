@@ -13,10 +13,21 @@ CREATE TABLE IF NOT EXISTS "character" (
 
 CREATE TABLE IF NOT EXISTS "country" (
     "id" BIGSERIAL,
-    "country" varchar(255) NOT NULL UNIQUE,
+    "country" varchar(255) NOT NULL,
     "latitude" float NOT NULL,
     "longitude" float NOT NULL,
     "name" varchar(255) NOT NULL,
     "continent" varchar(255) NOT NULL,
     PRIMARY KEY ("id")
+);
+
+CREATE TABLE IF NOT EXISTS "users" (
+    "id" BIGSERIAL,
+    "gender" varchar(255) NOT NULL,
+    "title" varchar(255) NOT NULL,
+    "first_name" varchar(255) NOT NULL,
+    "last_name" varchar(255) NOT NULL,
+    "country" varchar(255) NOT NULL,
+    "age" int NOT NULL,
+    PRIMARY KEY ("id")    
 );
