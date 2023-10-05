@@ -1,14 +1,13 @@
 CREATE TABLE IF NOT EXISTS "character" (
-    "id" BIGSERIAL,
-    "name" varchar(255) NOT NULL UNIQUE,
+    "id" BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    "name" varchar(255) NOT NULL,
     "attributes" varchar(255) NOT NULL,
     "race" varchar(255) NOT NULL,
     "languages" varchar(255) NOT NULL,
     "class" varchar(255) NOT NULL,
     "proficiency_choices" varchar(255) NOT NULL,
     "level" varchar(255) NOT NULL,
-    "spells" varchar(255) NOT NULL,
-    PRIMARY KEY ("id")
+    "spells" varchar(255)
 );
 
 CREATE TABLE IF NOT EXISTS "country" (

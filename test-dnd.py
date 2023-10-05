@@ -1,29 +1,9 @@
 from faker import Faker
-import airflow
-import datetime
-from airflow import DAG
-from airflow.operators.bash_operator import BashOperator
-from airflow.operators.postgres_operator import PostgresOperator
-from airflow.operators.python_operator import PythonOperator
-from urllib.request import urlopen
 import json
 import pandas as pd
 
 import random
-
-default_args = {
-    'start_date': datetime.datetime(2020, 10, 6, 20, 0, 0, 0),
-    'owner': 'airflow',
-    'interval': '@weekly',
-    'retries': 1,
-    'retry_delay': datetime.timedelta(minutes=5),
-}
-
-dnd_dag = DAG(
-    dag_id='dnd_dag',
-    default_args=default_args,
-    catchup=False,
-)
+from urllib.request import urlopen
 
 def _get_data():
     # name of character
@@ -39,7 +19,6 @@ def _get_data():
     # Generate 5 characters
     for i in range(5):
         name = fake.name()
-        name = name.replace(" ", "+")
         list_names.append(name)
         # Attributes
         abilities = ["str", "dex", "con", "int", "wis", "cha"]
@@ -100,7 +79,6 @@ def _get_data():
             source = response.read()
         data_spells = json.loads(source)
         list_spells = [data_spells["results"][i]["name"] for i in range(data_spells["count"])]
-        list_spells = [list_spells[i].replace(" ", "+") for i in range(len(list_spells))]
         str_spells = '_'.join(list_spells)
         list_spell.append(str_spells)
 
@@ -114,33 +92,9 @@ def _get_data():
     df["proficiency_choices"] = list_proficiency_choices
     df["level"] = list_level
     df["spells"] = list_spell
-    df.to_csv("/opt/airflow/dags/data/character.csv", index=False)
+    df.to_csv("character.csv", index=False)
     return df
 
-# first task
-get_data = PythonOperator(
-    task_id='get_data',
-    python_callable=_get_data,
-    dag=dnd_dag,
-)
-
-# second task
 df = _get_data()
-query = f"""
-    INSERT INTO "character" VALUES
-    ({df.iloc[0]["name"]}, {df.iloc[0]["attributes"]}, {df.iloc[0]["race"]}, {df.iloc[0]["languages"]}, {df.iloc[0]["class"]}, {df.iloc[0]["proficiency_choices"]}, {df.iloc[0]["level"]}, {df.iloc[0]["spells"]}),
-    ({df.iloc[1]["name"]}, {df.iloc[1]["attributes"]}, {df.iloc[1]["race"]}, {df.iloc[1]["languages"]}, {df.iloc[1]["class"]}, {df.iloc[1]["proficiency_choices"]}, {df.iloc[1]["level"]}, {df.iloc[1]["spells"]}),
-    ({df.iloc[2]["name"]}, {df.iloc[2]["attributes"]}, {df.iloc[2]["race"]}, {df.iloc[2]["languages"]}, {df.iloc[2]["class"]}, {df.iloc[2]["proficiency_choices"]}, {df.iloc[2]["level"]}, {df.iloc[2]["spells"]}),
-    ({df.iloc[3]["name"]}, {df.iloc[3]["attributes"]}, {df.iloc[3]["race"]}, {df.iloc[3]["languages"]}, {df.iloc[3]["class"]}, {df.iloc[3]["proficiency_choices"]}, {df.iloc[3]["level"]}, {df.iloc[3]["spells"]}),
-    ({df.iloc[4]["name"]}, {df.iloc[4]["attributes"]}, {df.iloc[4]["race"]}, {df.iloc[4]["languages"]}, {df.iloc[4]["class"]}, {df.iloc[4]["proficiency_choices"]}, {df.iloc[4]["level"]}, {df.iloc[4]["spells"]});
-"""
-insert_data = PostgresOperator(
-    task_id='insert_data',
-    postgres_conn_id='postgres_default',
-    sql=query,
-    dag=dnd_dag,
-    trigger_rule='none_failed',
-    autocommit=True,
-)   
-
-get_data >> insert_data
+for i in range(len(df)):
+    print(df.iloc[i]['level'])
